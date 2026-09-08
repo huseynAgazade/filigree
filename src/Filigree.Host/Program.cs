@@ -1,14 +1,21 @@
-﻿using System.Text.Json;
-using Filigree.Core;
+﻿using Filigree.Core;
 using Filigree.Modules.Ldap;
 
-Console.WriteLine("Filigree — LDAP module. Ctrl+C to stop.\n");
+var selfPid = Environment.ProcessId;
+var logPath = Path.Combine(AppContext.BaseDirectory, "logs", "filigree-ldap.jsonl");
 
-var json  = new JsonSerializerOptions { WriteIndented = true };
+Console.WriteLine($"Filigree — LDAP module (pid {selfPid})");
+Console.WriteLine($"Writing to {logPath}");
+Console.WriteLine("Ctrl+C to stop.\n");
+
 var cache = new ProcessCache();
 cache.Seed();
 
 var parser = new LdapSearchParser(cache);
+
+using var sink = new CompositeSink(
+    new ConsoleSink(indented: true),
+    new JsonlSink(logPath));
 
 using var session = new EtwSession("Filigree-Ldap");
 session.TrackProcesses(cache);
@@ -17,7 +24,8 @@ session.Subscribe(data =>
 {
     var evt = parser.Parse(data);
     if (evt is null) return;
-    Console.WriteLine(JsonSerializer.Serialize(evt, json));
+    if (evt.ProcessId == selfPid) return;   // never log our own activity
+    sink.Write(evt);
 });
 
 session.EnableProvider(LdapProvider.Guid, LdapProvider.KeywordSearch);
