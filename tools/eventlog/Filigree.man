@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<instrumentationManifest xmlns="http://schemas.microsoft.com/win/2004/08/events">
+  <instrumentation>
+    <events>
+      <provider name="Filigree"
+                guid="{7B1E9F42-6C3D-4A8E-9F21-5D4C8A3B7E60}"
+                symbol="FILIGREE_PROVIDER"
+                resourceFileName="%SystemRoot%\System32\filigree-events.dll"
+                messageFileName="%SystemRoot%\System32\filigree-events.dll">
+        <channels>
+          <channel name="Filigree/Operational"
+                   chid="Operational"
+                   symbol="FILIGREE_OPERATIONAL"
+                   type="Operational"
+                   enabled="true"/>
+        </channels>
+        <templates>
+          <template tid="EventJson">
+            <data name="Json" inType="win:UnicodeString"/>
+          </template>
+        </templates>
+        <events>
+          <event value="1" version="0" channel="Operational" level="win:Informational"
+                 template="EventJson" symbol="FILIGREE_EVENT"
+                 message="$(string.Event.Filigree)"/>
+        </events>
+      </provider>
+    </events>
+  </instrumentation>
+  <localization>
+    <resources culture="en-US">
+      <stringTable>
+        <string id="Event.Filigree" value="%1"/>
+      </stringTable>
+    </resources>
+  </localization>
+</instrumentationManifest>
