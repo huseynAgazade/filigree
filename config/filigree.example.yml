@@ -16,13 +16,15 @@ process:
 ldap:
   enabled: true
 
-  # Suppress noisy legitimate callers. Substring match, case-insensitive.
-  excludeImages: []
-    # - \Windows\System32\svchost.exe
+  # RootDSE probes issued by client libraries during connection setup.
+  # Empty base DN, base scope. Not application searches.
+  excludeRootDse: true
 
-  # Suppress RootDSE capability lookups issued by client libraries during
-  # connection setup. These are not application searches. See
-  # docs/providers/ldap-client.md.
+  # Substring match, case-insensitive. Uncomment the key AND the items together.
+  excludeImages: []
+  # excludeImages:
+  #   - \Windows\System32\svchost.exe
+
   excludeFilters: []
-    # - supportedCapabilities
-    # - supportedSASLMechanisms
+  # excludeFilters:
+  #   - (objectClass=computer)

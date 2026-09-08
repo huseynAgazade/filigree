@@ -5,9 +5,14 @@ var configPath = args.Length > 0
     ? args[0]
     : Path.Combine(AppContext.BaseDirectory, "filigree.yml");
 
+Console.WriteLine($"[filigree] config path: {Path.GetFullPath(configPath)}");
+Console.WriteLine($"[filigree] config exists: {File.Exists(configPath)}");
+
 var config  = ConfigLoader.Load(configPath);
 var selfPid = Environment.ProcessId;
 
+Console.WriteLine($"[filigree] excludeImages: {config.Ldap.ExcludeImages.Count}");
+Console.WriteLine($"[filigree] excludeFilters: {config.Ldap.ExcludeFilters.Count} -> {string.Join(", ", config.Ldap.ExcludeFilters)}");
 Console.WriteLine($"Filigree (pid {selfPid}) — session '{config.SessionName}'");
 
 if (!config.Ldap.Enabled)
@@ -30,7 +35,6 @@ if (config.Sinks.Jsonl)
         ? config.Sinks.JsonlPath
         : Path.Combine(AppContext.BaseDirectory, config.Sinks.JsonlPath);
     sinks.Add(new JsonlSink(path, config.Sinks.JsonlMaxBytes, config.Sinks.JsonlMaxFiles));
-    Console.WriteLine($"JSONL sink: {path}");
 }
 if (config.Sinks.EventLog)
 {
@@ -51,7 +55,11 @@ session.Subscribe(data =>
     var evt = parser.Parse(data);
     if (evt is null) return;
     if (evt.ProcessId == selfPid) return;
-    if (!filter.ShouldEmit(evt)) return;
+    if (!filter.ShouldEmit(evt))
+    {
+        Console.WriteLine("[filigree] suppressed by filter");
+        return;
+    }
     sink.Write(evt);
 });
 

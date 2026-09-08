@@ -4,7 +4,7 @@ namespace Filigree.Tests;
 
 public class EventFilterTests
 {
-    private static FiligreeEvent Make(string image, string searchFilter) => new()
+    private static FiligreeEvent Make(string? image, string searchFilter, string dn = "DC=x", int scope = 2) => new()
     {
         UtcTime = "2026-01-01T00:00:00.000Z",
         Hostname = "TEST",
@@ -16,15 +16,41 @@ public class EventFilterTests
         Image = image,
         Payload = new Dictionary<string, object>
         {
-            ["ldap"] = new Dictionary<string, object> { ["SearchFilter"] = searchFilter }
+            ["ldap"] = new Dictionary<string, object>
+            {
+                ["SearchFilter"] = searchFilter,
+                ["DistinguishedName"] = dn,
+                ["ScopeOfSearch"] = scope,
+            }
         },
     };
 
     [Fact]
-    public void EmitsByDefault()
+    public void EmitsApplicationSearch()
     {
         var f = new EventFilter(new ModuleConfig());
         Assert.True(f.ShouldEmit(Make(@"C:\x.exe", "(objectClass=user)")));
+    }
+
+    [Fact]
+    public void SuppressesRootDseProbe()
+    {
+        var f = new EventFilter(new ModuleConfig { ExcludeRootDse = true });
+        Assert.False(f.ShouldEmit(Make(@"C:\x.exe", "(objectclass=*)", dn: "", scope: 0)));
+    }
+
+    [Fact]
+    public void KeepsRootDseWhenDisabled()
+    {
+        var f = new EventFilter(new ModuleConfig { ExcludeRootDse = false });
+        Assert.True(f.ShouldEmit(Make(@"C:\x.exe", "(objectclass=*)", dn: "", scope: 0)));
+    }
+
+    [Fact]
+    public void EmptyDnWithSubtreeScopeIsNotRootDse()
+    {
+        var f = new EventFilter(new ModuleConfig { ExcludeRootDse = true });
+        Assert.True(f.ShouldEmit(Make(@"C:\x.exe", "(objectClass=user)", dn: "", scope: 2)));
     }
 
     [Fact]
@@ -37,8 +63,8 @@ public class EventFilterTests
     [Fact]
     public void SuppressesExcludedFilter()
     {
-        var f = new EventFilter(new ModuleConfig { ExcludeFilters = { "supportedCapabilities" } });
-        Assert.False(f.ShouldEmit(Make(@"C:\x.exe", "(objectclass=*)")) is false);
+        var f = new EventFilter(new ModuleConfig { ExcludeFilters = { "objectClass=computer" } });
+        Assert.False(f.ShouldEmit(Make(@"C:\x.exe", "(objectClass=computer)")));
         Assert.True(f.ShouldEmit(Make(@"C:\x.exe", "(objectClass=user)")));
     }
 
@@ -53,6 +79,6 @@ public class EventFilterTests
     public void NullImageDoesNotThrow()
     {
         var f = new EventFilter(new ModuleConfig { ExcludeImages = { "svchost.exe" } });
-        Assert.True(f.ShouldEmit(Make(null!, "(x=y)")));
+        Assert.True(f.ShouldEmit(Make(null, "(x=y)")));
     }
 }

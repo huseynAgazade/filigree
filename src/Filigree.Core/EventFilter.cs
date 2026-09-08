@@ -10,15 +10,23 @@ public sealed class EventFilter(ModuleConfig config)
                 if (evt.Image.Contains(pattern, StringComparison.OrdinalIgnoreCase))
                     return false;
 
-        if (config.ExcludeFilters.Count > 0
-            && evt.Payload.TryGetValue("ldap", out var raw)
-            && raw is Dictionary<string, object> ldap
-            && ldap.TryGetValue("SearchFilter", out var f))
+        if (!evt.Payload.TryGetValue("ldap", out var raw) || raw is not Dictionary<string, object> ldap)
+            return true;
+
+        var searchFilter = ldap.TryGetValue("SearchFilter", out var f) ? f.ToString() ?? "" : "";
+
+        foreach (var pattern in config.ExcludeFilters)
+            if (searchFilter.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+        // RootDSE probes: empty base DN with base scope. Issued by client
+        // libraries during connection setup, not by application code.
+        // See docs/providers/ldap-client.md.
+        if (config.ExcludeRootDse)
         {
-            var filter = f.ToString() ?? string.Empty;
-            foreach (var pattern in config.ExcludeFilters)
-                if (filter.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                    return false;
+            var dn = ldap.TryGetValue("DistinguishedName", out var d) ? d.ToString() ?? "" : "";
+            var scope = ldap.TryGetValue("ScopeOfSearch", out var s) && s is int i ? i : -1;
+            if (string.IsNullOrEmpty(dn) && scope == 0) return false;
         }
 
         return true;

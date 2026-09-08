@@ -14,3 +14,5 @@ artifacts/
 
 # Local overrides
 filigree.local.yml
+
+config/filigree.yml

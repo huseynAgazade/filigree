@@ -23,6 +23,15 @@ public sealed class ModuleConfig
 {
     public bool Enabled { get; set; } = true;
 
+    /// <summary>
+    /// Suppress RootDSE probes: empty base DN with base scope (0). Client
+    /// libraries such as System.DirectoryServices.Protocols issue these during
+    /// connection setup to read supportedCapabilities, supportedSASLMechanisms
+    /// and similar. They are not application searches.
+    /// See docs/providers/ldap-client.md.
+    /// </summary>
+    public bool ExcludeRootDse { get; set; } = true;
+
     /// <summary>Image paths to suppress. Case-insensitive substring match.</summary>
     public List<string> ExcludeImages { get; set; } = new();
 
