@@ -1,0 +1,5 @@
+﻿<Project>
+  <ItemGroup>
+    <None Include="..\fixtures\**\*.etl" CopyToOutputDirectory="PreserveNewest" LinkBase="fixtures" />
+  </ItemGroup>
+</Project>
