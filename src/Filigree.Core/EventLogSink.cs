@@ -27,8 +27,9 @@ public sealed class EventLogSink : IEventSink
 
             _log = new EventLog(LogName) { Source = SourceName };
         }
-        catch
+        catch (Exception ex)
         {
+            Console.Error.WriteLine($"[filigree] eventlog init failed: {ex.GetType().Name}: {ex.Message}");
             _log = null;
         }
     }
@@ -36,8 +37,14 @@ public sealed class EventLogSink : IEventSink
     public void Write(FiligreeEvent evt)
     {
         if (_log is null) return;
-        try { _log.WriteEntry(JsonSerializer.Serialize(evt, Opts), EventLogEntryType.Information, 1); }
-        catch { }
+        try
+        {
+            _log.WriteEntry(JsonSerializer.Serialize(evt, Opts), EventLogEntryType.Information, 1);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[filigree] eventlog write failed: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
     public void Dispose() => _log?.Dispose();
