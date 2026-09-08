@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Filigree.Core/Filigree.Core.csproj" />
+    <Project Path="src/Filigree.Host/Filigree.Host.csproj" />
+    <Project Path="src/Filigree.Modules.Ldap/Filigree.Modules.Ldap.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Filigree.Tests/Filigree.Tests.csproj" />
+  </Folder>
+</Solution>
