@@ -1,0 +1,28 @@
+﻿sessionName: Filigree
+
+sinks:
+  console: true
+  consoleIndented: true
+  jsonl: true
+  jsonlPath: logs/filigree.jsonl
+  jsonlMaxBytes: 67108864
+  jsonlMaxFiles: 5
+  eventLog: true
+
+process:
+  trackProcesses: true
+  cacheGraceMinutes: 5
+
+ldap:
+  enabled: true
+
+  # Suppress noisy legitimate callers. Substring match, case-insensitive.
+  excludeImages: []
+    # - \Windows\System32\svchost.exe
+
+  # Suppress RootDSE capability lookups issued by client libraries during
+  # connection setup. These are not application searches. See
+  # docs/providers/ldap-client.md.
+  excludeFilters: []
+    # - supportedCapabilities
+    # - supportedSASLMechanisms
