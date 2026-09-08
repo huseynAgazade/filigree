@@ -1,26 +1,20 @@
-﻿using Filigree.Core;
+﻿using System.Text.Json;
+using Filigree.Core;
 using Filigree.Modules.Ldap;
 
-Console.WriteLine("Filigree — LDAP consumer (commit 4: raw dump)");
-Console.WriteLine("Press Ctrl+C to stop.\n");
+Console.WriteLine("Filigree — LDAP module. Ctrl+C to stop.\n");
+
+var json = new JsonSerializerOptions { WriteIndented = true };
 
 using var session = new EtwSession("Filigree-Ldap");
 
 session.Subscribe(data =>
 {
-    if ((int)data.ID != LdapProvider.EventIdSearch) return;
-
-    Console.WriteLine($"[{data.TimeStamp:HH:mm:ss.fff}] EventID={(int)data.ID} PID={data.ProcessID} TID={data.ThreadID}");
-    foreach (var name in data.PayloadNames)
-    {
-        Console.WriteLine($"    {name} = {data.PayloadByName(name)}");
-    }
-    Console.WriteLine();
+    var evt = LdapSearchParser.Parse(data);
+    if (evt is null) return;
+    Console.WriteLine(JsonSerializer.Serialize(evt, json));
 });
 
 session.EnableProvider(LdapProvider.Guid, LdapProvider.KeywordSearch);
-
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; session.Stop(); };
-
 session.Process();
-Console.WriteLine("Session stopped.");
