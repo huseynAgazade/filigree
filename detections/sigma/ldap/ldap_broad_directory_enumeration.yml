@@ -1,0 +1,39 @@
+﻿title: Broad LDAP directory enumeration
+id: 4a7f2e91-8c03-4b5d-9e26-1d6a8f3b7c52
+status: experimental
+description: |
+  Detects subtree LDAP searches with a broad object-class filter, characteristic
+  of bulk directory collection by BloodHound/SharpHound, ADExplorer, or
+  ldapdomaindump. Low fidelity on its own; correlate with the initiating process
+  and with volume over a short window.
+references:
+  - https://attack.mitre.org/techniques/T1087/002/
+  - https://attack.mitre.org/techniques/T1069/002/
+author: Filigree
+date: 2026-09-09
+tags:
+  - attack.discovery
+  - attack.t1087.002
+  - attack.t1069.002
+logsource:
+  product: windows
+  service: filigree
+  category: ldap_search
+detection:
+  selection:
+    ScopeOfSearch: 2
+    SearchFilter|contains:
+      - 'objectClass=user'
+      - 'objectClass=computer'
+      - 'objectCategory=person'
+      - 'samAccountType=805306368'
+  filter_known_good:
+    Image|endswith:
+      - '\mmc.exe'
+      - '\dsac.exe'
+  condition: selection and not filter_known_good
+falsepositives:
+  - Directory administration tools
+  - Inventory, IAM sync, and asset management platforms
+  - Login scripts that enumerate group membership
+level: medium

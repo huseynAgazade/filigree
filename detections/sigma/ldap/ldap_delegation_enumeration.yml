@@ -1,0 +1,30 @@
+﻿title: LDAP query for Kerberos delegation configuration
+id: 9c1e7a35-4b82-4d6f-a017-3e8d5b9f2c40
+status: experimental
+description: |
+  Detects LDAP searches for accounts configured with unconstrained,
+  constrained, or resource-based constrained delegation. Delegation
+  misconfiguration is a common privilege escalation path and one of the
+  first things BloodHound collection looks for.
+references:
+  - https://attack.mitre.org/techniques/T1558/
+author: Filigree
+date: 2026-09-09
+tags:
+  - attack.credential-access
+  - attack.privilege-escalation
+logsource:
+  product: windows
+  service: filigree
+  category: ldap_search
+detection:
+  selection_unconstrained:
+    SearchFilter|contains: 'userAccountControl:1.2.840.113556.1.4.803:=524288'
+  selection_constrained:
+    SearchFilter|contains: 'msDS-AllowedToDelegateTo'
+  selection_rbcd:
+    SearchFilter|contains: 'msDS-AllowedToActOnBehalfOfOtherIdentity'
+  condition: 1 of selection_*
+falsepositives:
+  - Delegation configuration audits
+level: high

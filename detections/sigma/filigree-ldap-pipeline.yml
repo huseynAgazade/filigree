@@ -1,0 +1,18 @@
+﻿title: Filigree LDAP module
+description: Field mapping for Filigree LDAP search events (Module=ldap, EventType=LdapSearch).
+logsources:
+  filigree_ldap:
+    product: windows
+    service: filigree
+    category: ldap_search
+    conditions:
+      Module: ldap
+      EventType: LdapSearch
+fieldmappings:
+  Image: Image
+  User: User
+  ProcessId: ProcessId
+  SearchFilter: ldap.SearchFilter
+  DistinguishedName: ldap.DistinguishedName
+  AttributeList: ldap.AttributeList
+  ScopeOfSearch: ldap.ScopeOfSearch

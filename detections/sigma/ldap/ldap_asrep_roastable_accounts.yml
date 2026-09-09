@@ -1,0 +1,25 @@
+﻿title: LDAP query for accounts with Kerberos preauthentication disabled
+id: 2b8d4f70-1e56-4c9a-8d33-7f0b6a2c5e94
+status: experimental
+description: |
+  Detects LDAP searches for accounts with DONT_REQ_PREAUTH set in
+  userAccountControl (bit 0x400000). These accounts can be AS-REP roasted
+  without any prior credential.
+references:
+  - https://attack.mitre.org/techniques/T1558/004/
+author: Filigree
+date: 2026-09-09
+tags:
+  - attack.credential-access
+  - attack.t1558.004
+logsource:
+  product: windows
+  service: filigree
+  category: ldap_search
+detection:
+  selection:
+    SearchFilter|contains: 'userAccountControl:1.2.840.113556.1.4.803:=4194304'
+  condition: selection
+falsepositives:
+  - Account hygiene audits looking for insecure preauthentication settings
+level: high

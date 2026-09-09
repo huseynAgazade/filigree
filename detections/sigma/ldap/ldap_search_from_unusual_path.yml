@@ -1,0 +1,31 @@
+﻿title: LDAP search from uncommon process location
+id: 8e5b3c17-6a49-4f82-b70d-9c2e1a8d5f36
+status: experimental
+description: |
+  Detects LDAP searches originating from executables in user-writable locations.
+  Legitimate directory clients normally run from System32 or Program Files;
+  offensive tooling is typically dropped into a temp or user directory.
+author: Filigree
+date: 2026-09-09
+tags:
+  - attack.discovery
+  - attack.t1087.002
+logsource:
+  product: windows
+  service: filigree
+  category: ldap_search
+detection:
+  selection:
+    Image|contains:
+      - '\Users\'
+      - '\Temp\'
+      - '\AppData\'
+      - '\PerfLogs\'
+      - '\Downloads\'
+  filter_dotnet:
+    Image|contains: '\AppData\Local\Microsoft\WindowsApps\'
+  condition: selection and not filter_dotnet
+falsepositives:
+  - Developer tooling and portable admin utilities run from a user profile
+  - Software distributed per-user rather than machine-wide
+level: medium

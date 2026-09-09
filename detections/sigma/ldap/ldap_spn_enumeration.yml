@@ -1,0 +1,30 @@
+﻿title: LDAP query for accounts with service principal names
+id: 6f3a1c84-9d27-4e13-b5f8-2a7c9e0d4b61
+status: experimental
+description: |
+  Detects LDAP searches enumerating user accounts that have a servicePrincipalName
+  set. This is the standard reconnaissance step before Kerberoasting, used by
+  Rubeus, PowerView Get-DomainSPNTicket, and Impacket GetUserSPNs.
+references:
+  - https://attack.mitre.org/techniques/T1558/003/
+author: Filigree
+date: 2026-09-09
+tags:
+  - attack.credential-access
+  - attack.t1558.003
+logsource:
+  product: windows
+  service: filigree
+  category: ldap_search
+detection:
+  selection_spn:
+    SearchFilter|contains: 'servicePrincipalName=*'
+  selection_user:
+    SearchFilter|contains|all:
+      - 'samAccountType=805306368'
+      - 'servicePrincipalName'
+  condition: selection_spn or selection_user
+falsepositives:
+  - Directory inventory and service-account audit tooling
+  - Monitoring systems that enumerate SPNs for health checks
+level: high
