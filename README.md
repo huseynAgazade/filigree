@@ -158,6 +158,16 @@ third-party writeups.
 Tests replay a captured `.etl` fixture, so they need no administrator, no LDAP
 server, and no domain. This is also what lets CI run them.
 
+## How this was built
+
+Written with an AI coding assistant. The premise is a real telemetry gap: Sysmon covers
+process creation, network connections, image loads and DNS, but not LDAP — while Windows
+already emits it through the `Microsoft-Windows-LDAP-Client` ETW provider. Filigree
+subscribes, normalizes, and adds the process context that makes the event useful, so a
+SharpHound-shaped search filter is attributable to a specific PID.
+
+---
+
 ## License
 
 Apache-2.0
